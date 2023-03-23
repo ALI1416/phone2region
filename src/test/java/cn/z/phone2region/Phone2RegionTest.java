@@ -24,7 +24,7 @@ class Phone2RegionTest {
     /**
      * 通过url初始化
      */
-    // @Test
+    @Test
     void test00InitByUrl() {
         log.info(String.valueOf(Phone2Region.initialized()));
         Phone2Region.initByUrl("https://cdn.jsdelivr.net/gh/ali1416/phone2region@master/data/phone2region.zdat");
@@ -41,7 +41,7 @@ class Phone2RegionTest {
     /**
      * 通过文件初始化
      */
-    @Test
+    // @Test
     void test01InitByFile() {
         Phone2Region.initByFile("E:/phone2region.zip");
         log.info(String.valueOf(Phone2Region.parse("18754710000")));
