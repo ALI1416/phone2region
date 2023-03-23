@@ -4,31 +4,42 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>phone2region</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 
   <parent>
     <groupId>cn.404z</groupId>
     <artifactId>parent</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
   </parent>
 
-  <name>${project.artifactId}</name>
+  <name>phone2region</name>
   <description>Phone Number To Region 手机号码转区域</description>
   <url>https://github.com/ALI1416/phone2region</url>
 
   <scm>
     <url>git@github.com:ALI1416/phone2region.git</url>
-    <connection>scm:${project.scm.url}</connection>
-    <developerConnection>scm:${project.scm.url}</developerConnection>
+    <connection>scm:git@github.com:ALI1416/phone2region.git</connection>
   </scm>
 
   <dependencies>
-    <!-- 额外依赖 -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.4.5</version>
+      <version>1.4.6</version>
       <scope>provided</scope>
+    </dependency>
+    <!-- 仅供测试使用 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.9.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.26</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
