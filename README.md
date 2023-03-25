@@ -4,7 +4,7 @@
 [![Java Support](https://img.shields.io/badge/Java-8+-green)](https://openjdk.org/)
 [![Maven Central](https://img.shields.io/maven-central/v/cn.404z/phone2region?label=Maven%20Central)](https://mvnrepository.com/artifact/cn.404z/phone2region)
 [![Tag](https://img.shields.io/github/v/tag/ali1416/phone2region?label=Tag)](https://github.com/ALI1416/phone2region/tags)
-[![Repo Size](https://img.shields.io/github/repo-size/ali1416/phone2region?label=Repo%20Size&color=success)](https://github.com/ALI1416/phone2region)
+[![Repo Size](https://img.shields.io/github/repo-size/ali1416/phone2region?label=Repo%20Size&color=success)](https://github.com/ALI1416/phone2region/archive/refs/heads/master.zip)
 
 [![Java CI](https://github.com/ALI1416/phone2region/actions/workflows/ci.yml/badge.svg)](https://github.com/ALI1416/phone2region/actions/workflows/ci.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ALI1416_phone2region&metric=coverage)
