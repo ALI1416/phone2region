@@ -3,7 +3,7 @@
 - 当前版本：`2023-02-25`
 - 数据文件来源：<https://github.com/xluohome/phonedata>
 - 查看最新版本：<https://github.com/xluohome/phonedata/commits/master/phone.dat>
-- 数据文件下载：<https://github.com/xluohome/phonedata/blob/master/phone.dat>
+- 数据文件下载：<https://cdn.jsdelivr.net/gh/xluohome/phonedata@master/phone.dat>
 - 数据文件生成方法java程序：[点击查看](../src/test/java/cn/z/phone2region/DataGenerationTest.java)
 
 ## 文件列表
