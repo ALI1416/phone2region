@@ -2,6 +2,7 @@ package cn.z.phone2region;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.*;
@@ -27,42 +28,28 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 class DataGenerationTest {
 
-    /**
-     * dat文件转txt文件
-     */
-    // @Test
-    void test00Dat2txt() throws Exception {
-        log.info("版本号为：{}", dat2txt("E:/phone.dat", "E:/phone2region.txt"));
-    }
-
-    /**
-     * txt文件转dat文件
-     */
-    // @Test
-    void test01Txt2dat() throws Exception {
-        txt2dat("E:/phone2region.txt", "E:/phone2region.dat", "2302");
-    }
+    final String datPath = "E:/phone.dat";
+    final String dat2Path = "E:/phone2region.dat";
+    final String txtPath = "E:/phone2region.txt";
+    final String dbPath = "E:/phone2region.db";
+    final String zdbPath = "E:/phone2region.zdb";
+    final int version = 20230225;
+    final String version2 = "2302";
 
     /**
      * 数据文件生成
      */
     // @Test
-    void test03DataGeneration() throws Exception {
-        String datPath = "E:/phone.dat";
-        String txtPath = "E:/phone2region.txt";
-        String datPath2 = "E:/phone2region.dat";
-        String zipPath = "E:/phone2region.zip";
-        String version = dat2txt(datPath, txtPath);
-        txt2dat(txtPath, datPath2, version);
-        compress(datPath2, zipPath);
+    void test00DataGeneration() throws Exception {
+        test03Txt2Db();
+        test04Compress();
     }
 
     /**
      * dat文件转txt文件
-     *
-     * @return 版本号
      */
-    String dat2txt(String datPath, String txtPath) throws Exception {
+    // @Test
+    void test01Dat2Txt() throws Exception {
         log.info("---------- dat文件转txt文件 ---------- 开始");
         // 记录区Map<偏移量,记录值>
         Map<Integer, String> recordMap = new HashMap<>();
@@ -132,13 +119,13 @@ class DataGenerationTest {
         bufferedWriter.close();
         log.info("写入文件完成");
         log.info("---------- dat文件转txt文件 ---------- 结束");
-        return version;
     }
 
     /**
      * txt文件转dat文件
      */
-    void txt2dat(String txtPath, String datPath, String version) throws Exception {
+    @Test
+    void test02Txt2Dat() throws Exception {
         log.info("---------- txt文件转dat文件 ---------- 开始");
         final byte BYTE0 = 0;
         // 记录区Set
@@ -181,7 +168,7 @@ class DataGenerationTest {
         /* 创建二进制文件 */
         ByteBuffer buffer = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
         // 版本号
-        buffer.put(version.getBytes(StandardCharsets.UTF_8));
+        buffer.put(version2.getBytes(StandardCharsets.UTF_8));
         // 索引偏移量
         buffer.putInt(indicesOffset);
         // 记录区
@@ -195,12 +182,12 @@ class DataGenerationTest {
             // 手机号码前7位
             buffer.putInt(Integer.parseInt(s[0]));
             // 偏移量
-            buffer.putInt(recordMap.get(s[1].hashCode()).getOffset());
+            buffer.putInt(recordMap.get(s[1].hashCode()).getPrt());
             // ISP
             buffer.put(getIsp(s[2]));
         }
         /* 导出文件 */
-        FileOutputStream fileOutputStream = new FileOutputStream(datPath);
+        FileOutputStream fileOutputStream = new FileOutputStream(dat2Path);
         fileOutputStream.write(buffer.array());
         fileOutputStream.flush();
         fileOutputStream.close();
@@ -248,28 +235,38 @@ class DataGenerationTest {
      */
     static class Record {
         /**
-         * 偏移
+         * 指针
          */
-        private int offset;
+        private int prt;
         /**
-         * byte[]
+         * 记录值
          */
         private byte[] bytes;
+        /**
+         * 记录值长度
+         */
+        private int byteLength;
 
         public Record() {
         }
 
-        public Record(int offset, byte[] bytes) {
-            this.offset = offset;
+        public Record(int prt, byte[] bytes) {
+            this.prt = prt;
             this.bytes = bytes;
         }
 
-        public int getOffset() {
-            return offset;
+        public Record(int prt, byte[] bytes, int byteLength) {
+            this.prt = prt;
+            this.bytes = bytes;
+            this.byteLength = byteLength;
         }
 
-        public void setOffset(int offset) {
-            this.offset = offset;
+        public int getPrt() {
+            return prt;
+        }
+
+        public void setPrt(int prt) {
+            this.prt = prt;
         }
 
         public byte[] getBytes() {
@@ -280,20 +277,37 @@ class DataGenerationTest {
             this.bytes = bytes;
         }
 
+        public int getByteLength() {
+            return byteLength;
+        }
+
+        public void setByteLength(int byteLength) {
+            this.byteLength = byteLength;
+        }
+
         @Override
         public String toString() {
-            return "Record{" + "offset=" + offset + ", bytes=" + new String(bytes) + '}';
+            return "Record{" + "prt=" + prt + ", bytes=" + new String(bytes) + ", byteLength=" + byteLength + '}';
         }
+    }
+
+    /**
+     * txt文件转db文件
+     */
+    // @Test
+    void test03Txt2Db() {
+
     }
 
     /**
      * 压缩
      */
-    void compress(String filePath, String zipPath) throws Exception {
-        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipPath));
-        File file = new File(filePath);
-        zipOutputStream.putNextEntry(new ZipEntry(file.getName()));
-        FileInputStream fileInputStream = new FileInputStream(filePath);
+    // @Test
+    void test04Compress() throws Exception {
+        log.info("---------- 压缩 ---------- 开始");
+        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zdbPath));
+        zipOutputStream.putNextEntry(new ZipEntry(new File(dbPath).getName()));
+        FileInputStream fileInputStream = new FileInputStream(dbPath);
         byte[] buffer = new byte[4096];
         int n;
         while (-1 != (n = fileInputStream.read(buffer))) {
@@ -303,6 +317,7 @@ class DataGenerationTest {
         fileInputStream.close();
         zipOutputStream.closeEntry();
         zipOutputStream.close();
+        log.info("---------- 压缩 ---------- 结束");
     }
 
 }

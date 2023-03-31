@@ -14,16 +14,11 @@
 
 ## 简介
 
-本项目根据[手机归属地查询(EeeMt/phone-number-geo)](https://github.com/EeeMt/phone-number-geo)重构，并加上了数据文件压缩后从外部导入、静态方法调用等，以及支持[SpringBoot自动配置](https://github.com/ALI1416/phone2region-spring-boot-autoconfigure)
+本项目根据[EeeMt/phone-number-geo](https://github.com/EeeMt/phone-number-geo)重构，并加上了数据文件压缩后从外部导入、静态方法调用等，以及支持[SpringBoot自动配置](https://github.com/ALI1416/phone2region-spring-boot-autoconfigure)
 
 ## 数据文件
 
 - 数据文件目录：[点击查看](./data)
-- 数据文件生成方法java程序：[点击查看](./src/test/java/cn/z/phone2region/DataGenerationTest.java)
-- 本项目所使用的数据文件(`压缩后的dat文件`)：
-[![phone2region.zxdb](https://img.shields.io/github/size/ali1416/phone2region/data/phone2region.zdat?label=%E7%82%B9%E5%87%BB%E4%B8%8B%E8%BD%BD%20phone2region.zdat&color=success)](https://cdn.jsdelivr.net/gh/ali1416/phone2region@master/data/phone2region.zdat)
-- 归属地列表(`手机号码前7位|省份|城市|邮政编码|区号|ISP`)：
-[![phone2region.txt](https://img.shields.io/github/size/ali1416/phone2region/data/phone2region.txt?label=%E7%82%B9%E5%87%BB%E4%B8%8B%E8%BD%BD%20phone2region.txt&color=success)](https://cdn.jsdelivr.net/gh/ali1416/phone2region@master/data/phone2region.txt)
 
 ## 依赖导入
 
@@ -31,7 +26,7 @@
 <dependency>
   <groupId>cn.404z</groupId>
   <artifactId>phone2region</artifactId>
-  <version>1.1.0</version>
+  <version>2.0.0</version>
 </dependency>
 <dependency>
   <groupId>ch.qos.logback</groupId>
@@ -164,9 +159,10 @@ log.info("查询700000条数据，{}条有效数据，用时{}毫秒", count, en
 
 ## 交流
 
-QQ：1416978277  
-微信：1416978277  
-支付宝：1416978277@qq.com  
+- [x] QQ：`1416978277`
+- [x] 微信：`1416978277`
+- [x] 支付宝：`1416978277@qq.com`
+
 ![交流](https://cdn.jsdelivr.net/gh/ALI1416/ALI1416/image/contact.png)
 
 ## 赞助

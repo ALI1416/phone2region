@@ -17,12 +17,6 @@ import java.util.zip.ZipInputStream;
  * <h1>手机号码转区域</h1>
  *
  * <p>
- * <a href="https://github.com/EeeMt/phone-number-geo">参考项目</a>
- * <a href="https://github.com/xluohome/phonedata">数据来源</a>
- * <a href="https://github.com/ALI1416/phone2region">数据文件</a>
- * </p>
- *
- * <p>
  * createDate 2023/03/15 17:31:35
  * </p>
  *
