@@ -11,6 +11,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.text.Collator;
 import java.util.*;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -39,7 +40,7 @@ class DataGenerationTest {
     /**
      * 数据文件生成
      */
-    // @Test
+    @Test
     void test00DataGeneration() throws Exception {
         test03Txt2Db();
         test04Compress();
@@ -55,10 +56,12 @@ class DataGenerationTest {
         Map<Integer, String> recordMap = new HashMap<>();
         // 索引区List(手机号码前7位|省份|城市|邮编|区号|ISP)
         List<String> vectorList = new ArrayList<>();
+
         /* 读取文件 */
         FileInputStream fileInputStream = new FileInputStream(datPath);
         byte[] bytes = cn.z.phone2region.Phone2Region.inputStream2bytes(fileInputStream);
         ByteBuffer buffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
+
         /* 获取版本号 */
         // pos 0 len 4 type utf8
         // 32 33 30 32 -> 2302
@@ -66,11 +69,13 @@ class DataGenerationTest {
         buffer.get(versionBytes);
         String version = new String(versionBytes);
         log.info("版本号为：{}", version);
+
         /* 获取索引偏移量 */
         // pos 4 len 4 type int
         // 59 27 00 00 -> 10073
         int indicesOffset = buffer.getInt();
         log.info("索引偏移量为：{}", indicesOffset);
+
         /* 获取记录区Map */
         // pos 8 len indicesOffset-8 type list<utf8> split 0x00
         // E5 AE 89 E5 BE BD 7C E5 B7 A2 E6 B9 96 7C 32 33 38 30 30 30 7C 30 35 35 31 00 -> 安徽|巢湖|238000|0551
@@ -92,6 +97,7 @@ class DataGenerationTest {
             start = end;
         }
         log.info("读取到记录区数据 {} 条", recordMap.size());
+
         /* 索引区保存到结果List */
         // pos indicesOffset len capacity-indicesOffset type list<byte[9]>
         // pos 0 len 4 type int -> tel
@@ -107,9 +113,10 @@ class DataGenerationTest {
             int tel = buffer.getInt();
             int recordPos = buffer.getInt();
             byte isp = buffer.get();
-            vectorList.add(tel + "|" + recordMap.get(recordPos) + "|" + cn.z.phone2region.Phone2Region.getIsp(isp));
+            vectorList.add(tel + "|" + recordMap.get(recordPos) + "|" + getIsp(isp));
         }
         log.info("读取到索引区数据 {} 条", vectorList.size());
+
         /* 保存文件 */
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(txtPath));
         for (String result : vectorList) {
@@ -119,6 +126,41 @@ class DataGenerationTest {
         bufferedWriter.close();
         log.info("写入文件完成");
         log.info("---------- dat文件转txt文件 ---------- 结束");
+    }
+
+    /**
+     * 获取ISP
+     */
+    String getIsp(byte b) {
+        switch (b) {
+            case 1: {
+                return "移动";
+            }
+            case 2: {
+                return "联通";
+            }
+            case 3: {
+                return "电信";
+            }
+            case 4: {
+                return "移动虚拟";
+            }
+            case 5: {
+                return "联通虚拟";
+            }
+            case 6: {
+                return "电信虚拟";
+            }
+            case 7: {
+                return "广电";
+            }
+            case 8: {
+                return "广电虚拟";
+            }
+            default: {
+                return "未知";
+            }
+        }
     }
 
     /**
@@ -135,6 +177,7 @@ class DataGenerationTest {
         // 索引区List[{手机号码前7位,省份|城市|邮编|区号,ISP}]
         List<String[]> vectorList = new ArrayList<>();
         // 结果Map<手机号码前7位,{省份|城市|邮编|区号,ISP}>
+
         /* 读取文件 */
         BufferedReader bufferedReader = new BufferedReader(new FileReader(txtPath));
         String line = bufferedReader.readLine();
@@ -149,6 +192,7 @@ class DataGenerationTest {
         bufferedReader.close();
         log.info("记录区数据 {} 条", recordSet.size());
         log.info("索引区数据 {} 条", vectorList.size());
+
         /* 计算文件大小 */
         // 版本号4字节，索引偏移量4字节
         int size = 8;
@@ -165,6 +209,7 @@ class DataGenerationTest {
         // 索引区
         size += vectorList.size() * 9;
         log.info("文件容量 {} 字节", size);
+
         /* 创建二进制文件 */
         ByteBuffer buffer = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
         // 版本号
@@ -186,6 +231,7 @@ class DataGenerationTest {
             // ISP
             buffer.put(getIsp(s[2]));
         }
+
         /* 导出文件 */
         FileOutputStream fileOutputStream = new FileOutputStream(dat2Path);
         fileOutputStream.write(buffer.array());
@@ -294,9 +340,192 @@ class DataGenerationTest {
     /**
      * txt文件转db文件
      */
-    // @Test
-    void test03Txt2Db() {
+    @Test
+    void test03Txt2Db() throws Exception {
+        log.info("---------- txt文件转db文件 ---------- 开始");
+        // 头部区 版本号 指针
+        final int headerVersionPtr = 4;
+        // 头部区 记录区指针 值
+        final int headerRecordAreaPtrValue = 20;
+        // 头部区 二级索引区指针 值
+        int headerVector2AreaPtrValue;
+        // 头部区 索引区指针 值
+        int headerVectorAreaPtrValue;
+        // 二级索引 个数 700000>>8=2734
+        final int vector2Size = 2734 + 1 + 1;
 
+        // 记录区Set
+        Set<String> recordSet = new TreeSet<>((o1, o2) -> Collator.getInstance(Locale.CHINA).compare(o1, o2));
+        // 记录区Map<记录值hash,Record>
+        Map<Integer, Record> recordMap = new LinkedHashMap<>();
+        // 索引区List<Vector>
+        List<Vector> vectorList = new ArrayList<>();
+
+        /* 读取文件 */
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(txtPath));
+        String line = bufferedReader.readLine();
+        while (line != null && !line.isEmpty()) {
+            // 手机号码前7位|省份|城市|邮编|区号|ISP
+            String[] s = line.split("\\|");
+            String record = s[1] + "|" // 省份
+                    + s[2] + "|" // 城市
+                    + s[3] + "|" // 邮编
+                    + s[4] + "|" // 区号
+                    + s[5]; // ISP
+            recordSet.add(record);
+            vectorList.add(new Vector(s[0], record.hashCode()));
+            line = bufferedReader.readLine();
+        }
+        bufferedReader.close();
+        log.info("记录区数据 {} 条", recordSet.size());
+        log.info("索引区数据 {} 条", vectorList.size());
+
+        /* 计算文件大小 */
+        // 头部区
+        int size = headerRecordAreaPtrValue;
+        // 记录区
+        for (String record : recordSet) {
+            // java的String为UTF16LE是变长4字节，而UTF8是变长3字节
+            byte[] bytes = record.getBytes(StandardCharsets.UTF_8);
+            int length = bytes.length;
+            if (length > 256) {
+                throw new Exception("记录值`" + record + "`为" + length + "字节，超出最大限制255字节！");
+            }
+            recordMap.put(record.hashCode(), new Record(size, bytes, length));
+            size += (length + 1);
+        }
+        // 头部区 二级索引区指针 值
+        headerVector2AreaPtrValue = size;
+        // 头部区 索引区指针 值
+        headerVectorAreaPtrValue = headerVector2AreaPtrValue + vector2Size * 4;
+        // 二级索引区
+        size += vector2Size * 4;
+        // 索引区
+        size += vectorList.size() * 5;
+        log.info("文件容量 {} 字节", size);
+
+        /* 创建二进制文件 */
+        ByteBuffer buffer = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
+        // 记录区
+        buffer.position(headerRecordAreaPtrValue);
+        for (Record r : recordMap.values()) {
+            // 记录值长度
+            buffer.put((byte) r.getByteLength());
+            // 记录值
+            buffer.put(r.getBytes());
+        }
+
+        // 索引区
+        buffer.position(headerVectorAreaPtrValue);
+        for (Vector vector : vectorList) {
+            vector.setPrt(buffer.position());
+            // 手机号码前7位-1300000的后8bit
+            buffer.put(vector.getPhoneNumberByte());
+            // 记录指针
+            buffer.putInt(recordMap.get(vector.getRecordHash()).getPrt());
+        }
+
+        // 二级索引区
+        buffer.position(headerVector2AreaPtrValue);
+        int number = 0;
+        for (Vector vector : vectorList) {
+            if (vector.getNumber() >= number) {
+                int count = ((vector.getNumber() - number) / 256) + 1;
+                for (int i = 0; i < count; i++) {
+                    buffer.putInt(vector.getPrt());
+                }
+                number += count * 256;
+            }
+        }
+        // 附加一条
+        buffer.putInt(buffer.capacity());
+
+        // 头部区
+        // 版本号
+        buffer.position(headerVersionPtr);
+        buffer.putInt(version);
+        // 记录区指针
+        buffer.putInt(headerRecordAreaPtrValue);
+        // 二级索引区指针
+        buffer.putInt(headerVector2AreaPtrValue);
+        // 索引区指针
+        buffer.putInt(headerVectorAreaPtrValue);
+        // CRC32校验和
+        buffer.position(4);
+        CRC32 crc32 = new CRC32();
+        crc32.update(buffer);
+        buffer.position(0);
+        buffer.putInt((int) crc32.getValue());
+
+        /* 导出文件 */
+        FileOutputStream fileOutputStream = new FileOutputStream(dbPath);
+        fileOutputStream.write(buffer.array());
+        fileOutputStream.flush();
+        fileOutputStream.close();
+        log.info("写入文件完成");
+        log.info("---------- txt文件转db文件 ---------- 结束");
+    }
+
+    /**
+     * 索引
+     */
+    static class Vector {
+        /**
+         * 指针
+         */
+        private int prt;
+        /**
+         * 手机号码前7位-1300000
+         */
+        private int number;
+        /**
+         * 记录值hash
+         */
+        private int recordHash;
+
+        public Vector() {
+        }
+
+        public Vector(String number, int recordHash) {
+            this.number = Integer.parseInt(number) - 1300000;
+            this.recordHash = recordHash;
+        }
+
+        /**
+         * 手机号码前7位-1300000的后8bit
+         */
+        public byte getPhoneNumberByte() {
+            return (byte) number;
+        }
+
+        public int getPrt() {
+            return prt;
+        }
+
+        public void setPrt(int prt) {
+            this.prt = prt;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public void setNumber(int number) {
+            this.number = number;
+        }
+
+        public int getRecordHash() {
+            return recordHash;
+        }
+
+        public void setRecordHash(int recordHash) {
+            this.recordHash = recordHash;
+        }
+
+        @Override
+        public String toString() {
+            return "Vector{" + "prt=" + prt + ", number=" + number + ", recordHash=" + recordHash + '}';
+        }
     }
 
     /**

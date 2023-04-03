@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -38,13 +38,13 @@ public class Phone2Region {
      */
     private static ByteBuffer buffer;
     /**
-     * 索引偏移量
+     * 二级索引区指针
      */
-    private static int indicesOffset;
+    private static int vector2AreaPtr;
     /**
-     * 索引偏移量最大值
+     * 索引区指针
      */
-    private static int indicesOffsetMax;
+    private static int vectorAreaPtr;
 
     private Phone2Region() {
     }
@@ -79,7 +79,7 @@ public class Phone2Region {
 
     /**
      * 初始化实例通过URL<br>
-     * 可以用：<code>https://cdn.jsdelivr.net/gh/ali1416/phone2region@master/data/phone2region.zdat</code>
+     * 可以用：<code>https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb</code>
      *
      * @param url URL
      */
@@ -100,17 +100,17 @@ public class Phone2Region {
     /**
      * 初始化实例
      *
-     * @param inputStream 压缩的zdat输入流
+     * @param inputStream 压缩的zdb输入流
      */
     public static void init(InputStream inputStream) {
         if (notInstantiated) {
             synchronized (Phone2Region.class) {
                 if (notInstantiated) {
-                    if (inputStream == null) {
-                        throw new Phone2RegionException("数据文件为空！");
-                    }
                     try {
-                        // 解压并提取文件
+                        if (inputStream == null) {
+                            throw new Phone2RegionException("数据文件为空！");
+                        }
+                        // 解压
                         ZipInputStream zipInputStream = new ZipInputStream(inputStream);
                         ZipEntry entry = zipInputStream.getNextEntry();
                         if (entry == null) {
@@ -119,30 +119,31 @@ public class Phone2Region {
                         // 数据
                         buffer = ByteBuffer.wrap(inputStream2bytes(zipInputStream)) //
                                 .asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
-                        // 版本号
-                        byte[] versionBytes = new byte[4];
-                        buffer.get(versionBytes);
-                        String version = new String(versionBytes);
-                        // 索引偏移量
-                        indicesOffset = buffer.getInt();
-                        indicesOffsetMax = buffer.capacity() - 9;
-                        // 检查数据文件是否正确
-                        // [0,99]
-                        int year = ((versionBytes[0] - 48) * 10 + versionBytes[1] - 48);
-                        // [1,12]
-                        int month = ((versionBytes[2] - 48) * 10 + versionBytes[3] - 48);
-                        // indicesOffset [9,indicesOffsetMax]
-                        if (year < 0 || year > 99 || month < 1 || month > 12 || indicesOffset < 9 || indicesOffset > indicesOffsetMax) {
-                            throw new Phone2RegionException("数据文件错误！" + //
-                                    "年份应为[0,99]，当前为" + year + "；" + //
-                                    "月份应为[1,12]，当前为" + month + "；" + //
-                                    "索引偏移量应为[9," + indicesOffsetMax + "]，当前为" + indicesOffset);
+                        int crc32OriginValue = buffer.getInt();
+                        CRC32 crc32 = new CRC32();
+                        crc32.update(buffer);
+                        if (crc32OriginValue != (int) crc32.getValue()) {
+                            throw new Phone2RegionException("数据文件校验错误！");
                         }
-                        log.info("数据加载成功，版本号为：{}", version);
+                        buffer.position(4);
+                        int version = buffer.getInt();
+                        buffer.position(buffer.position() + 4);
+                        vector2AreaPtr = buffer.getInt();
+                        vectorAreaPtr = buffer.getInt();
+                        log.info("数据加载成功，版本号为：{}，校验码为：{}", version,
+                                Integer.toHexString(crc32OriginValue).toUpperCase());
                         notInstantiated = false;
                     } catch (Exception e) {
                         log.error("初始化异常！", e);
                         throw new Phone2RegionException("初始化异常！");
+                    } finally {
+                        if (inputStream != null) {
+                            try {
+                                inputStream.close();
+                            } catch (Exception e) {
+                                log.error("关闭异常！", e);
+                            }
+                        }
                     }
                 } else {
                     log.warn("已经初始化过了，不可重复初始化！");
@@ -157,7 +158,7 @@ public class Phone2Region {
      * 解析手机号码的区域
      *
      * @param phone 手机号码(前7-11位)
-     * @return Region(找不到返回null)
+     * @return Region
      */
     public static Region parse(String phone) {
         if (notInstantiated) {
@@ -178,44 +179,17 @@ public class Phone2Region {
         if (num < 1300000 || num > 1999999) {
             return null;
         }
-        // 二分查找
-        int left = indicesOffset;
-        int right = left + (num - 1300000) * 9;
-        if (right > indicesOffsetMax) {
-            right = indicesOffsetMax;
-        }
-        int mid;
-        while (left <= right) {
-            mid = (left + right) / 2;
-            mid = align(mid);
-            // 查找是否匹配到
-            buffer.position(mid);
-            int compare = Integer.compare(buffer.getInt(), num);
-            if (compare == 0) {
-                // 跳过前4字节(手机号码前7位)
-                buffer.position(mid + 4);
-                // 记录pos
-                int recordPos = buffer.getInt();
-                // isp标记位
-                byte ispMark = buffer.get();
-                // 计算记录长度
-                buffer.position(recordPos);
-                while ((buffer.get()) != 0) {
-                    // 每条记录以0x00结尾
-                }
-                int recordPosEnd = buffer.position() - 1;
-                // 读取记录内容
-                byte[] recordBytes = new byte[recordPosEnd - recordPos];
-                buffer.position(recordPos);
-                buffer.get(recordBytes);
-                // 返回结果
-                return new Region(new String(recordBytes, StandardCharsets.UTF_8), getIsp(ispMark));
-            } else if (compare > 0) {
-                right = mid - 9;
-            } else {
-                left = mid + 9;
-            }
-        }
+
+        return null;
+    }
+
+    /**
+     * 解析手机号码的区域
+     *
+     * @param phone 手机号码前7位-1300000
+     * @return Region
+     */
+    public static Region innerParse(int phone) {
         return null;
     }
 
@@ -223,48 +197,13 @@ public class Phone2Region {
      * 字节对齐
      */
     private static int align(int pos) {
-        int remain = (pos - indicesOffset) % 9;
-        if (pos - indicesOffset < 9) {
+        int remain = (pos - vectorAreaPtr) % 5;
+        if (pos - vectorAreaPtr < 5) {
             return pos - remain;
         } else if (remain != 0) {
-            return pos + 9 - remain;
+            return pos + 5 - remain;
         } else {
             return pos;
-        }
-    }
-
-    /**
-     * 获取ISP
-     */
-    public static String getIsp(byte b) {
-        switch (b) {
-            case 1: {
-                return "移动";
-            }
-            case 2: {
-                return "联通";
-            }
-            case 3: {
-                return "电信";
-            }
-            case 4: {
-                return "移动虚拟";
-            }
-            case 5: {
-                return "联通虚拟";
-            }
-            case 6: {
-                return "电信虚拟";
-            }
-            case 7: {
-                return "广电";
-            }
-            case 8: {
-                return "广电虚拟";
-            }
-            default: {
-                return "未知";
-            }
         }
     }
 
