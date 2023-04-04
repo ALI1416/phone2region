@@ -2,7 +2,6 @@ package cn.z.phone2region;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.*;
@@ -40,7 +39,7 @@ class DataGenerationTest {
     /**
      * 数据文件生成
      */
-    @Test
+    // @Test
     void test00DataGeneration() throws Exception {
         test03Txt2Db();
         test04Compress();
@@ -166,7 +165,7 @@ class DataGenerationTest {
     /**
      * txt文件转dat文件
      */
-    @Test
+    // @Test
     void test02Txt2Dat() throws Exception {
         log.info("---------- txt文件转dat文件 ---------- 开始");
         final byte BYTE0 = 0;
@@ -343,7 +342,7 @@ class DataGenerationTest {
     /**
      * txt文件转db文件
      */
-    @Test
+    // @Test
     void test03Txt2Db() throws Exception {
         log.info("---------- txt文件转db文件 ---------- 开始");
         // 头部区 版本号 指针
