@@ -80,7 +80,7 @@ public class Phone2Region {
 
     /**
      * 初始化实例通过URL<br>
-     * 可以用：<code>https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb</code>
+     * 例如：<code>https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb</code>
      *
      * @param url URL
      */

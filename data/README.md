@@ -7,10 +7,10 @@
 - 文件名：`phone2region.zdb`
   - 版本号：`20230225`
   - 校验码：`C8AEEA0A`
-  - 点击下载：[![phone2region.zdb](https://img.shields.io/github/size/ali1416/ip2region/data/phone2region.zdb?label=phone2region.zdb&color=success&branch=v2.0.0)](https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb)
+  - 点击下载：[![phone2region.zdb](https://img.shields.io/github/size/ali1416/phone2region/data/phone2region.zdb?label=phone2region.zdb&color=success&branch=v2.0.0)](https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb)
   - 链接地址：`https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb`
 - 文件名：`phone2region.txt`
-  - 点击下载：[![phone2region.txt](https://img.shields.io/github/size/ali1416/ip2region/data/phone2region.txt?label=phone2region.txt&color=success&branch=v2.0.0)](https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.txt)
+  - 点击下载：[![phone2region.txt](https://img.shields.io/github/size/ali1416/phone2region/data/phone2region.txt?label=phone2region.txt&color=success&branch=v2.0.0)](https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.txt)
   - 链接地址：`https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.txt`
 
 ## 数据来源
