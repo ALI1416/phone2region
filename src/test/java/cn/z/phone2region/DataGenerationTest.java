@@ -184,9 +184,12 @@ class DataGenerationTest {
         while (line != null && !line.isEmpty()) {
             // 手机号码前7位|省份|城市|邮编|区号|ISP
             String[] s = line.split("\\|");
-            String region = s[1] + "|" + s[2] + "|" + s[3] + "|" + s[4];
-            recordSet.add(region);
-            vectorList.add(new String[]{s[0], region, s[5]});
+            String record = s[1] + "|" // 省份
+                    + s[2] + "|" // 城市
+                    + s[3] + "|" // 邮编
+                    + s[4]; // 区号
+            recordSet.add(record);
+            vectorList.add(new String[]{s[0], record, s[5]});
             line = bufferedReader.readLine();
         }
         bufferedReader.close();

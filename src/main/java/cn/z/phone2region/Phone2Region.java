@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -158,39 +159,105 @@ public class Phone2Region {
      * 解析手机号码的区域
      *
      * @param phone 手机号码(前7-11位)
-     * @return Region
+     * @return Region(找不到返回null)
      */
     public static Region parse(String phone) {
-        if (notInstantiated) {
-            log.error("未初始化！");
-            return null;
-        }
         // 7-11位
         if (phone == null || phone.length() < 7 || phone.length() > 11) {
-            return null;
+            throw new Phone2RegionException("手机号码 " + phone + " 不合法！");
         }
         int num;
         try {
             num = Integer.parseInt(phone.substring(0, 7));
         } catch (Exception ignore) {
-            return null;
+            throw new Phone2RegionException("手机号码 " + phone + " 不合法！");
         }
         // 1300000-1999999
         if (num < 1300000 || num > 1999999) {
-            return null;
+            throw new Phone2RegionException("手机号码 " + phone + " 不合法！");
         }
+        return innerParse(num - 1300000);
+    }
 
-        return null;
+    /**
+     * 解析手机号码的区域
+     *
+     * @param phone 手机号码(11位)
+     * @return Region(找不到返回null)
+     * @since 2.0.0
+     */
+    public static Region parse(long phone) {
+        // 1300000_0000-1999999_9999
+        if (phone < 1300000_0000L || phone > 1999999_9999L) {
+            throw new Phone2RegionException("手机号码 " + phone + " 不合法！");
+        }
+        return innerParse(((int) (phone / 10000)) - 1300000);
+    }
+
+    /**
+     * 解析手机号码的区域
+     *
+     * @param phone 手机号码(前7位)
+     * @return Region(找不到返回null)
+     * @since 2.0.0
+     */
+    public static Region parse(int phone) {
+        // 1300000-1999999
+        if (phone < 1300000 || phone > 1999999) {
+            throw new Phone2RegionException("手机号码 " + phone + " 不合法！");
+        }
+        return innerParse(phone - 1300000);
     }
 
     /**
      * 解析手机号码的区域
      *
      * @param phone 手机号码前7位-1300000
-     * @return Region
+     * @return Region(找不到返回null)
      */
     public static Region innerParse(int phone) {
-        return null;
+        if (notInstantiated) {
+            log.error("未初始化！");
+            return null;
+        }
+
+        // 二级索引区
+        buffer.position(vector2AreaPtr + ((phone >> 8) << 2));
+        int left = buffer.getInt();
+        int right = buffer.getInt();
+
+        // 索引区
+        if (left == right) {
+            return null;
+        } else {
+            right -= 5;
+            // 二分查找
+            int num = 0;
+            int phoneSegments = phone & 0xFF;
+            // 索引区
+            while (left <= right) {
+                int mid = align((left + right) / 2);
+                // 查找是否匹配到
+                buffer.position(mid);
+                num = buffer.get() & 0xFF;
+                if (phoneSegments < num) {
+                    right = mid - 5;
+                } else if (phoneSegments > num) {
+                    left = mid + 5;
+                } else {
+                    break;
+                }
+            }
+            if (num != phoneSegments) {
+                return null;
+            }
+        }
+
+        // 记录区
+        buffer.position(buffer.getInt());
+        byte[] recordValue = new byte[buffer.get() & 0xFF];
+        buffer.get(recordValue);
+        return new Region(new String(recordValue, StandardCharsets.UTF_8));
     }
 
     /**

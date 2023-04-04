@@ -21,7 +21,7 @@ public class Region {
      */
     private String city;
     /**
-     * 邮政编码
+     * 邮编
      */
     private String zipCode;
     /**
@@ -42,15 +42,15 @@ public class Region {
     /**
      * 构造函数
      */
-    public Region(String region, String isp) {
-        // 省份|城市|邮政编码|区号
-        String[] s = region.split("\\|");
-        if (s.length == 4) {
-            province = s[0];
-            city = s[1];
-            zipCode = s[2];
-            areaCode = s[3];
-            this.isp = isp;
+    public Region(String region) {
+        // 省份|城市|邮编|区号|ISP
+        String[] s = region.split("\\|", -1);
+        if (s.length == 5) {
+            this.province = s[0];
+            this.city = s[1];
+            this.zipCode = s[2];
+            this.areaCode = s[3];
+            this.isp = s[4];
         }
     }
 
