@@ -1,10 +1,10 @@
 # Phone Number To Region 手机号码转区域
 
-[![License](https://img.shields.io/github/license/ali1416/phone2region?label=License)](https://opensource.org/licenses/BSD-3-Clause)
+[![License](https://img.shields.io/github/license/ALI1416/phone2region?label=License)](https://www.apache.org/licenses/LICENSE-2.0.txt)
 [![Java Support](https://img.shields.io/badge/Java-8+-green)](https://openjdk.org/)
 [![Maven Central](https://img.shields.io/maven-central/v/cn.404z/phone2region?label=Maven%20Central)](https://mvnrepository.com/artifact/cn.404z/phone2region)
-[![Tag](https://img.shields.io/github/v/tag/ali1416/phone2region?label=Tag)](https://github.com/ALI1416/phone2region/tags)
-[![Repo Size](https://img.shields.io/github/repo-size/ali1416/phone2region?label=Repo%20Size&color=success)](https://github.com/ALI1416/phone2region/archive/refs/heads/master.zip)
+[![Tag](https://img.shields.io/github/v/tag/ALI1416/phone2region?label=Tag)](https://github.com/ALI1416/phone2region/tags)
+[![Repo Size](https://img.shields.io/github/repo-size/ALI1416/phone2region?label=Repo%20Size&color=success)](https://github.com/ALI1416/phone2region/archive/refs/heads/master.zip)
 
 [![Java CI](https://github.com/ALI1416/phone2region/actions/workflows/ci.yml/badge.svg)](https://github.com/ALI1416/phone2region/actions/workflows/ci.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ALI1416_phone2region&metric=coverage)
@@ -26,12 +26,12 @@
 <dependency>
   <groupId>cn.404z</groupId>
   <artifactId>phone2region</artifactId>
-  <version>2.0.0</version>
+  <version>2.1.0</version>
 </dependency>
 <dependency>
   <groupId>ch.qos.logback</groupId>
   <artifactId>logback-classic</artifactId>
-  <version>1.4.6</version>
+  <version>1.4.7</version>
 </dependency>
 ```
 
@@ -40,7 +40,7 @@
 常量
 
 ```java
-final String url = "https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb";
+final String url = "https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb";
 final String zdbPath = "E:/phone2region.zdb";
 final String txtPath = "E:/phone2region.txt";
 final String errorPath = "E:/phone2region.error.txt";
@@ -63,7 +63,7 @@ log.info(String.valueOf(Phone2Region.parse(phone)));
 
 ```txt
 [main] INFO cn.z.phone2region.Phone2RegionTest - 是否已经初始化：false
-[main] INFO cn.z.phone2region.Phone2Region - 初始化，URL路径为：https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb
+[main] INFO cn.z.phone2region.Phone2Region - 初始化，URL路径为：https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb
 [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
 [main] INFO cn.z.phone2region.Phone2RegionTest - 是否已经初始化：true
 [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
@@ -268,14 +268,17 @@ log.info("解析 {} 条数据，有值 {} 条，空值 {} 条，错误 {} 条，
 [main] INFO cn.z.phone2region.Phone2RegionTest - 解析 700000 条数据，有值 497191 条，空值 202809 条，错误 0 条，用时 783 毫秒
 ```
 
-## 交流
+更多请见[测试](./src/test)
 
-- [x] QQ：`1416978277`
-- [x] 微信：`1416978277`
-- [x] 支付宝：`1416978277@qq.com`
+## 更新日志
 
-![交流](https://cdn.jsdelivr.net/gh/ALI1416/ALI1416/image/contact.png)
+[点击查看](./CHANGELOG.md)
 
-## 赞助
+## 关于
 
-![赞助](https://cdn.jsdelivr.net/gh/ALI1416/ALI1416/image/donate.png)
+<object data="https://404z.cn/images/about.svg" style="max-width:100%;">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://404z.cn/images/about.dark.svg">
+    <img alt="About" src="https://404z.cn/images/about.light.svg">
+  </picture>
+</object>

@@ -21,7 +21,7 @@ import java.io.*;
 @Slf4j
 class Phone2RegionTest {
 
-    final String url = "https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb";
+    final String url = "https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb";
     final String zdbPath = "E:/phone2region.zdb";
     final String txtPath = "E:/phone2region.txt";
     final String errorPath = "E:/phone2region.error.txt";
@@ -38,7 +38,7 @@ class Phone2RegionTest {
         log.info("是否已经初始化：{}", Phone2Region.initialized());
         log.info(String.valueOf(Phone2Region.parse(phone)));
         // [main] INFO cn.z.phone2region.Phone2RegionTest - 是否已经初始化：false
-        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，URL路径为：https://cdn.jsdelivr.net/gh/ali1416/phone2region@2.0.0/data/phone2region.zdb
+        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，URL路径为：https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb
         // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
         // [main] INFO cn.z.phone2region.Phone2RegionTest - 是否已经初始化：true
         // [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000',
