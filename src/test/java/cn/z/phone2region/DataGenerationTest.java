@@ -58,7 +58,7 @@ class DataGenerationTest {
 
         /* 读取文件 */
         FileInputStream fileInputStream = new FileInputStream(datPath);
-        byte[] bytes = cn.z.phone2region.Phone2Region.inputStream2bytes(fileInputStream);
+        byte[] bytes = cn.z.phone2region.Phone2Region.inputStream2Bytes(fileInputStream);
         ByteBuffer buffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
 
         /* 获取版本号 */

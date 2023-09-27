@@ -37,12 +37,11 @@ class Phone2RegionTest {
         log.info(String.valueOf(Phone2Region.initialized()));
         log.info("是否已经初始化：{}", Phone2Region.initialized());
         log.info(String.valueOf(Phone2Region.parse(phone)));
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - 是否已经初始化：false
-        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，URL路径为：https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb
-        // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - 是否已经初始化：true
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000',
-        // areaCode='0537', isp='移动'}
+        // INFO cn.z.phone2region.Phone2RegionTest -- 是否已经初始化：false
+        // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：URL路径URL_PATH https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb
+        // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
+        // INFO cn.z.phone2region.Phone2RegionTest -- 是否已经初始化：true
+        // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
     }
 
     /**
@@ -52,25 +51,20 @@ class Phone2RegionTest {
     void test01InitByFile() {
         Phone2Region.initByFile(zdbPath);
         log.info(String.valueOf(Phone2Region.parse(phone)));
-        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，文件路径为：E:/phone2region.zdb
-        // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000',
-        // areaCode='0537', isp='移动'}
+        // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH E:/phone2region.zdb
+        // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
+        // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
     }
 
     /**
      * 通过inputStream初始化
      */
     // @Test
-    void test02InitByInputStream() {
-        try {
-            Phone2Region.init(new FileInputStream(zdbPath));
-        } catch (Exception ignore) {
-        }
+    void test02InitByInputStream() throws FileNotFoundException {
+        Phone2Region.init(new FileInputStream(zdbPath));
         log.info(String.valueOf(Phone2Region.parse(phone)));
-        // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000',
-        // areaCode='0537', isp='移动'}
+        // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
+        // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
     }
 
     /**
@@ -81,11 +75,10 @@ class Phone2RegionTest {
         Phone2Region.initByFile(zdbPath);
         Phone2Region.initByFile(zdbPath);
         log.info(String.valueOf(Phone2Region.parse(phone)));
-        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，文件路径为：E:/phone2region.zdb
-        // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
-        // [main] WARN cn.z.phone2region.Phone2Region - 已经初始化过了，不可重复初始化！
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000',
-        // areaCode='0537', isp='移动'}
+        // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH E:/phone2region.zdb
+        // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
+        // WARN cn.z.phone2region.Phone2Region -- 已经初始化过了，不可重复初始化！
+        // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
     }
 
     /**
@@ -93,18 +86,23 @@ class Phone2RegionTest {
      */
     // @Test
     void test04InitException() {
-        Phone2Region.initByFile("A:/1.txt");
+        try {
+            Phone2Region.initByFile("A:/1.txt");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         log.info(String.valueOf(Phone2Region.parse(phone)));
-        // [main]  INFO cn.z.phone2region.Phone2Region - 初始化，文件路径为：A:/1.txt
-        // [main] ERROR cn.z.phone2region.Phone2Region - 初始化文件异常！
-        // java.io.FileNotFoundException: A:/1.txt (系统找不到指定的文件。)
+        // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH A:/1.txt
+        // ERROR cn.z.phone2region.Phone2Region -- 初始化文件异常！
+        // java.io.FileNotFoundException: A:\1.txt (系统找不到指定的路径。)
         // cn.z.phone2region.Phone2RegionException: 初始化文件异常！
+        // cn.z.phone2region.Phone2RegionException: 未初始化！
     }
 
     /**
      * 数据错误
      */
-    // @Test
+    @Test
     void test05Error() {
         Phone2Region.initByFile(zdbPath);
         try {
@@ -117,8 +115,8 @@ class Phone2RegionTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，文件路径为：E:/phone2region.zdb
-        // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
+        // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH E:/phone2region.zdb
+        // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
         // cn.z.phone2region.Phone2RegionException: 手机号码 123456789012 不合法！
         // cn.z.phone2region.Phone2RegionException: 手机号码 -1 不合法！
     }
@@ -136,11 +134,10 @@ class Phone2RegionTest {
         }
         long endTime = System.currentTimeMillis();
         log.info("查询 {} 条数据，用时 {} 毫秒", 700000, endTime - startTime);
-        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，文件路径为：E:/phone2region.zdb
-        // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000',
-        // areaCode='0537', isp='移动'}
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - 查询 700000 条数据，用时 173 毫秒
+        // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH E:/phone2region.zdb
+        // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
+        // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
+        // INFO cn.z.phone2region.Phone2RegionTest - 查询 700000 条数据，用时 173 毫秒
     }
 
     /**
@@ -207,11 +204,10 @@ class Phone2RegionTest {
         long endTime = System.currentTimeMillis();
         log.info("解析 {} 条数据，有值 {} 条，空值 {} 条，错误 {} 条，用时 {} 毫秒", 700000, successCount, nullCount, errorCount,
                 endTime - startTime);
-        // [main] INFO cn.z.phone2region.Phone2Region - 初始化，文件路径为：E:/phone2region.zdb
-        // [main] INFO cn.z.phone2region.Phone2Region - 数据加载成功，版本号为：20230225，校验码为：C8AEEA0A
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - Region{province='山东', city='济宁', zipCode='272000',
-        // areaCode='0537', isp='移动'}
-        // [main] INFO cn.z.phone2region.Phone2RegionTest - 解析 700000 条数据，有值 497191 条，空值 202809 条，错误 0 条，用时 783 毫秒
+        // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH E:/phone2region.zdb
+        // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
+        // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
+        // INFO cn.z.phone2region.Phone2RegionTest - 解析 700000 条数据，有值 497191 条，空值 202809 条，错误 0 条，用时 783 毫秒
     }
 
 }
