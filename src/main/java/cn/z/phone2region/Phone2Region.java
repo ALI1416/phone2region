@@ -209,12 +209,12 @@ public class Phone2Region {
     }
 
     /**
-     * 解析手机号码的区域
+     * 解析手机号码的区域(内部)
      *
      * @param phone 手机号码前7位-1300000
      * @return Region(找不到返回null)
      */
-    public static Region innerParse(int phone) {
+    private static Region innerParse(int phone) {
         if (notInstantiated) {
             throw new Phone2RegionException("未初始化！");
         }

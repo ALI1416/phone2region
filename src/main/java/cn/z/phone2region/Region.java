@@ -29,7 +29,7 @@ public class Region {
      */
     private String areaCode;
     /**
-     * isp
+     * ISP
      */
     private String isp;
 
@@ -41,6 +41,8 @@ public class Region {
 
     /**
      * 构造函数
+     *
+     * @param region 区域字符串
      */
     public Region(String region) {
         // 省份|城市|邮编|区号|ISP
