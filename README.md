@@ -1,4 +1,4 @@
-# Phone Number To Region 手机号码转区域
+# Phone Number To Region For Java 手机号码转区域Java版
 
 [![License](https://img.shields.io/github/license/ALI1416/phone2region?label=License)](https://www.apache.org/licenses/LICENSE-2.0.txt)
 [![Java Support](https://img.shields.io/badge/Java-8+-green)](https://openjdk.org/)
@@ -19,6 +19,10 @@
 ## 数据文件
 
 - 数据文件目录：[点击查看](./data)
+
+### 其他语言项目
+
+- `JavaScript` : [ALI1416/phone2region-js](https://github.com/ALI1416/phone2region-js)
 
 ## 依赖导入
 
