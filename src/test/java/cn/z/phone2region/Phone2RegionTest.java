@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * <h1>手机号码转区域测试</h1>
@@ -34,7 +36,6 @@ class Phone2RegionTest {
     void test00InitByUrl() {
         log.info("是否已经初始化：{}", Phone2Region.initialized());
         Phone2Region.initByUrl(url);
-        log.info(String.valueOf(Phone2Region.initialized()));
         log.info("是否已经初始化：{}", Phone2Region.initialized());
         log.info(String.valueOf(Phone2Region.parse(phone)));
         // INFO cn.z.phone2region.Phone2RegionTest -- 是否已经初始化：false
@@ -60,8 +61,8 @@ class Phone2RegionTest {
      * 通过inputStream初始化
      */
     // @Test
-    void test02InitByInputStream() throws FileNotFoundException {
-        Phone2Region.init(new FileInputStream(zdbPath));
+    void test02InitByInputStream() throws IOException {
+        Phone2Region.init(Files.newInputStream(Paths.get(zdbPath)));
         log.info(String.valueOf(Phone2Region.parse(phone)));
         // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
         // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
@@ -93,9 +94,8 @@ class Phone2RegionTest {
         }
         log.info(String.valueOf(Phone2Region.parse(phone)));
         // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH A:/1.txt
-        // ERROR cn.z.phone2region.Phone2Region -- 初始化文件异常！
-        // java.io.FileNotFoundException: A:\1.txt (系统找不到指定的路径。)
         // cn.z.phone2region.Phone2RegionException: 初始化文件异常！
+        // java.io.FileNotFoundException: A:\1.txt (系统找不到指定的路径。)
         // cn.z.phone2region.Phone2RegionException: 未初始化！
     }
 

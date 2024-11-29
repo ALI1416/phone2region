@@ -22,6 +22,7 @@
 
 ### 其他语言项目
 
+- `.Net` : [ALI1416/Phone2Region.Net](https://github.com/ALI1416/Phone2Region.Net)
 - `JavaScript` : [ALI1416/phone2region-js](https://github.com/ALI1416/phone2region-js)
 
 ## 依赖导入
@@ -30,12 +31,12 @@
 <dependency>
   <groupId>cn.404z</groupId>
   <artifactId>phone2region</artifactId>
-  <version>2.2.0</version>
+  <version>2.3.0</version>
 </dependency>
 <dependency>
   <groupId>ch.qos.logback</groupId>
   <artifactId>logback-classic</artifactId>
-  <version>1.4.11</version>
+  <version>1.5.12</version>
 </dependency>
 ```
 
@@ -56,7 +57,6 @@ final int phone = 1875471;
 ```java
 log.info("是否已经初始化：{}", Phone2Region.initialized());
 Phone2Region.initByUrl(url);
-log.info(String.valueOf(Phone2Region.initialized()));
 log.info("是否已经初始化：{}", Phone2Region.initialized());
 log.info(String.valueOf(Phone2Region.parse(phone)));
 // INFO cn.z.phone2region.Phone2RegionTest -- 是否已经初始化：false
@@ -79,7 +79,7 @@ log.info(String.valueOf(Phone2Region.parse(phone)));
 ### 通过inputStream初始化
 
 ```java
-Phone2Region.init(new FileInputStream(zdbPath));
+Phone2Region.init(Files.newInputStream(Paths.get(zdbPath)));
 log.info(String.valueOf(Phone2Region.parse(phone)));
 // INFO cn.z.phone2region.Phone2Region -- 数据加载成功：版本号VERSION 20230225 ，校验码CRC32 C8AEEA0A
 // INFO cn.z.phone2region.Phone2RegionTest -- Region{province='山东', city='济宁', zipCode='272000', areaCode='0537', isp='移动'}
@@ -109,7 +109,6 @@ log.info(String.valueOf(Phone2Region.parse(phone)));
 // INFO cn.z.phone2region.Phone2Region -- 手机号码转区域初始化：文件路径LOCAL_PATH A:/1.txt
 // ERROR cn.z.phone2region.Phone2Region -- 初始化文件异常！
 // java.io.FileNotFoundException: A:\1.txt (系统找不到指定的路径。)
-// cn.z.phone2region.Phone2RegionException: 初始化文件异常！
 // cn.z.phone2region.Phone2RegionException: 未初始化！
 ```
 
