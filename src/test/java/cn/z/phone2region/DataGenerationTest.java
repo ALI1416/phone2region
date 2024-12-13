@@ -1,8 +1,6 @@
 package cn.z.phone2region;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -26,7 +24,6 @@ import java.util.zip.ZipOutputStream;
  * @author ALI[ali-k@foxmail.com]
  * @since 1.0.0
  **/
-@TestMethodOrder(MethodOrderer.MethodName.class)
 @Slf4j
 class DataGenerationTest {
 
@@ -131,6 +128,9 @@ class DataGenerationTest {
 
     /**
      * 获取ISP
+     *
+     * @param b byte
+     * @return ISP
      */
     String getIsp(byte b) {
         switch (b) {
@@ -247,6 +247,9 @@ class DataGenerationTest {
 
     /**
      * 获取ISP
+     *
+     * @param isp ISP
+     * @return byte
      */
     byte getIsp(String isp) {
         switch (isp) {
@@ -275,75 +278,9 @@ class DataGenerationTest {
                 return 8;
             }
             default: {
-                return Byte.MAX_VALUE;
+                return 0;
             }
         }
-    }
-
-    /**
-     * 记录
-     */
-    static class Record {
-        /**
-         * 指针
-         */
-        private int prt;
-        /**
-         * 记录值
-         */
-        private byte[] bytes;
-        /**
-         * 记录值长度
-         */
-        private int byteLength;
-
-        public Record() {
-        }
-
-        public Record(int prt, byte[] bytes) {
-            this.prt = prt;
-            this.bytes = bytes;
-        }
-
-        public Record(int prt, byte[] bytes, int byteLength) {
-            this.prt = prt;
-            this.bytes = bytes;
-            this.byteLength = byteLength;
-        }
-
-        public int getPrt() {
-            return prt;
-        }
-
-        public void setPrt(int prt) {
-            this.prt = prt;
-        }
-
-        public byte[] getBytes() {
-            return bytes;
-        }
-
-        public void setBytes(byte[] bytes) {
-            this.bytes = bytes;
-        }
-
-        public int getByteLength() {
-            return byteLength;
-        }
-
-        public void setByteLength(int byteLength) {
-            this.byteLength = byteLength;
-        }
-
-        @Override
-        public String toString() {
-            return "Record{" +
-                    "prt=" + prt +
-                    ", bytes=" + Arrays.toString(bytes) +
-                    ", byteLength=" + byteLength +
-                    '}';
-        }
-
     }
 
     /**
@@ -358,7 +295,7 @@ class DataGenerationTest {
         final int headerRecordAreaPtrValue = 20;
         // 头部区 二级索引区指针 值
         int headerVector2AreaPtrValue;
-        // 头部区 索引区指针 值
+        // 头部区 一级索引区指针 值
         int headerVectorAreaPtrValue;
         // 二级索引 个数 700000>>8=2734
         final int vector2Size = 2734 + 1 + 1;
@@ -367,7 +304,7 @@ class DataGenerationTest {
         Set<String> recordSet = new TreeSet<>((o1, o2) -> Collator.getInstance(Locale.CHINA).compare(o1, o2));
         // 记录区Map<记录值hash,Record>
         Map<Integer, Record> recordMap = new LinkedHashMap<>();
-        // 索引区List<Vector>
+        // 一级索引区List<Vector>
         List<Vector> vectorList = new ArrayList<>();
 
         /* 读取文件 */
@@ -387,7 +324,7 @@ class DataGenerationTest {
         }
         bufferedReader.close();
         log.info("记录区数据 {} 条", recordSet.size());
-        log.info("索引区数据 {} 条", vectorList.size());
+        log.info("一级索引区数据 {} 条", vectorList.size());
 
         /* 计算文件大小 */
         // 头部区
@@ -400,16 +337,16 @@ class DataGenerationTest {
             if (length > 256) {
                 throw new Exception("记录值`" + record + "`为" + length + "字节，超出最大限制255字节！");
             }
-            recordMap.put(record.hashCode(), new Record(size, bytes, length));
+            recordMap.put(record.hashCode(), new Record(size, bytes));
             size += (length + 1);
         }
         // 头部区 二级索引区指针 值
         headerVector2AreaPtrValue = size;
-        // 头部区 索引区指针 值
+        // 头部区 一级索引区指针 值
         headerVectorAreaPtrValue = headerVector2AreaPtrValue + vector2Size * 4;
         // 二级索引区
         size += vector2Size * 4;
-        // 索引区
+        // 一级索引区
         size += vectorList.size() * 5;
         log.info("文件容量 {} 字节", size);
 
@@ -419,17 +356,17 @@ class DataGenerationTest {
         buffer.position(headerRecordAreaPtrValue);
         for (Record r : recordMap.values()) {
             // 记录值长度
-            buffer.put((byte) r.getByteLength());
+            buffer.put((byte) r.getBytes().length);
             // 记录值
             buffer.put(r.getBytes());
         }
 
-        // 索引区
+        // 一级索引区
         buffer.position(headerVectorAreaPtrValue);
         for (Vector vector : vectorList) {
             vector.setPrt(buffer.position());
             // 手机号码前7位-1300000的后8bit
-            buffer.put(vector.getPhoneNumberByte());
+            buffer.put((byte) vector.getNumber());
             // 记录指针
             buffer.putInt(recordMap.get(vector.getRecordHash()).getPrt());
         }
@@ -457,7 +394,7 @@ class DataGenerationTest {
         buffer.putInt(headerRecordAreaPtrValue);
         // 二级索引区指针
         buffer.putInt(headerVector2AreaPtrValue);
-        // 索引区指针
+        // 一级索引区指针
         buffer.putInt(headerVectorAreaPtrValue);
         // CRC32校验和
         buffer.position(4);
@@ -476,7 +413,75 @@ class DataGenerationTest {
     }
 
     /**
-     * 索引
+     * 压缩
+     */
+    // @Test
+    void test04Compress() throws Exception {
+        log.info("---------- 压缩 ---------- 开始");
+        ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(Paths.get(zdbPath)));
+        zipOutputStream.putNextEntry(new ZipEntry(new File(dbPath).getName()));
+        FileInputStream fileInputStream = new FileInputStream(dbPath);
+        byte[] buffer = new byte[4096];
+        int n;
+        while (-1 != (n = fileInputStream.read(buffer))) {
+            zipOutputStream.write(buffer, 0, n);
+        }
+        zipOutputStream.flush();
+        fileInputStream.close();
+        zipOutputStream.closeEntry();
+        zipOutputStream.close();
+        log.info("---------- 压缩 ---------- 结束");
+    }
+
+    /**
+     * 记录
+     */
+    static class Record {
+        /**
+         * 指针
+         */
+        private int prt;
+        /**
+         * 记录值
+         */
+        private byte[] bytes;
+
+        public Record() {
+        }
+
+        public Record(int prt, byte[] bytes) {
+            this.prt = prt;
+            this.bytes = bytes;
+        }
+
+        public int getPrt() {
+            return prt;
+        }
+
+        public void setPrt(int prt) {
+            this.prt = prt;
+        }
+
+        public byte[] getBytes() {
+            return bytes;
+        }
+
+        public void setBytes(byte[] bytes) {
+            this.bytes = bytes;
+        }
+
+        @Override
+        public String toString() {
+            return "Record{" +
+                    "prt=" + prt +
+                    ", bytes=" + Arrays.toString(bytes) +
+                    '}';
+        }
+
+    }
+
+    /**
+     * 一级索引
      */
     static class Vector {
         /**
@@ -495,16 +500,15 @@ class DataGenerationTest {
         public Vector() {
         }
 
+        /**
+         * 构造一级索引
+         *
+         * @param number     手机号码前7位
+         * @param recordHash 记录值hash
+         */
         public Vector(String number, int recordHash) {
             this.number = Integer.parseInt(number) - 1300000;
             this.recordHash = recordHash;
-        }
-
-        /**
-         * 手机号码前7位-1300000的后8bit
-         */
-        public byte getPhoneNumberByte() {
-            return (byte) number;
         }
 
         public int getPrt() {
@@ -540,27 +544,6 @@ class DataGenerationTest {
                     '}';
         }
 
-    }
-
-    /**
-     * 压缩
-     */
-    // @Test
-    void test04Compress() throws Exception {
-        log.info("---------- 压缩 ---------- 开始");
-        ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(Paths.get(zdbPath)));
-        zipOutputStream.putNextEntry(new ZipEntry(new File(dbPath).getName()));
-        FileInputStream fileInputStream = new FileInputStream(dbPath);
-        byte[] buffer = new byte[4096];
-        int n;
-        while (-1 != (n = fileInputStream.read(buffer))) {
-            zipOutputStream.write(buffer, 0, n);
-        }
-        zipOutputStream.flush();
-        fileInputStream.close();
-        zipOutputStream.closeEntry();
-        zipOutputStream.close();
-        log.info("---------- 压缩 ---------- 结束");
     }
 
 }

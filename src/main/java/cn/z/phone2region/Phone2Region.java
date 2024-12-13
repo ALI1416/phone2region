@@ -33,9 +33,9 @@ public class Phone2Region {
      */
     private static final Logger log = LoggerFactory.getLogger(Phone2Region.class);
     /**
-     * 标记没有实例化
+     * 已初始化
      */
-    private static volatile boolean notInstantiated = true;
+    private static volatile boolean isInit = false;
     /**
      * 数据
      */
@@ -45,7 +45,7 @@ public class Phone2Region {
      */
     private static int vector2AreaPtr;
     /**
-     * 索引区指针
+     * 一级索引区指针
      */
     private static int vectorAreaPtr;
 
@@ -59,7 +59,7 @@ public class Phone2Region {
      * @since 1.1.0
      */
     public static boolean initialized() {
-        return !notInstantiated;
+        return isInit;
     }
 
     /**
@@ -68,7 +68,7 @@ public class Phone2Region {
      * @param path 文件路径
      */
     public static void initByFile(String path) {
-        if (notInstantiated) {
+        if (!isInit) {
             try {
                 log.info("手机号码转区域初始化：文件路径LOCAL_PATH {}", path);
                 init(Files.newInputStream(Paths.get(path)));
@@ -87,7 +87,7 @@ public class Phone2Region {
      * @param url URL
      */
     public static void initByUrl(String url) {
-        if (notInstantiated) {
+        if (!isInit) {
             try {
                 log.info("手机号码转区域初始化：URL路径URL_PATH {}", url);
                 init(new URI(url).toURL().openConnection().getInputStream());
@@ -105,9 +105,9 @@ public class Phone2Region {
      * @param inputStream 压缩的zdb输入流
      */
     public static void init(InputStream inputStream) {
-        if (notInstantiated) {
+        if (!isInit) {
             synchronized (Phone2Region.class) {
-                if (notInstantiated) {
+                if (!isInit) {
                     if (inputStream == null) {
                         throw new Phone2RegionException("数据文件为空！");
                     }
@@ -133,14 +133,14 @@ public class Phone2Region {
                         vectorAreaPtr = buffer.getInt();
                         log.info("数据加载成功：版本号VERSION {} ，校验码CRC32 {}", version,
                                 String.format("%08X", crc32OriginValue));
-                        notInstantiated = false;
+                        isInit = true;
                     } catch (Exception e) {
                         throw new Phone2RegionException("初始化异常！", e);
                     } finally {
                         try {
                             inputStream.close();
                         } catch (Exception e) {
-                            log.error("关闭异常！", e);
+                            log.error("InputStream关闭异常！", e);
                         }
                     }
                 } else {
@@ -213,7 +213,7 @@ public class Phone2Region {
      * @return Region(找不到返回null)
      */
     private static Region innerParse(int phone) {
-        if (notInstantiated) {
+        if (!isInit) {
             throw new Phone2RegionException("未初始化！");
         }
 
@@ -222,7 +222,7 @@ public class Phone2Region {
         int left = buffer.getInt();
         int right = buffer.getInt();
 
-        // 索引区
+        // 一级索引区
         if (left == right) {
             return null;
         } else {
@@ -230,7 +230,7 @@ public class Phone2Region {
             // 二分查找
             int num = 0;
             int phoneSegments = phone & 0xFF;
-            // 索引区
+            // 一级索引区
             while (left <= right) {
                 int mid = align((left + right) / 2);
                 // 查找是否匹配到
@@ -276,18 +276,18 @@ public class Phone2Region {
     /**
      * InputStream转byte[]
      *
-     * @param input InputStream
+     * @param inputStream InputStream
      * @return byte[]
      */
-    public static byte[] inputStream2Bytes(InputStream input) throws IOException {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
+    public static byte[] inputStream2Bytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
         int n;
-        while (-1 != (n = input.read(buffer))) {
-            output.write(buffer, 0, n);
+        while (-1 != (n = inputStream.read(buffer))) {
+            outputStream.write(buffer, 0, n);
         }
-        input.close();
-        return output.toByteArray();
+        inputStream.close();
+        return outputStream.toByteArray();
     }
 
 }
