@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 class Phone2RegionTest {
 
     final String url = "https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb";
-    final String zdbPath = "E:/phone2region.zdb";
+    final String zdbPath = "D:/phone2region.zdb";
     final String txtPath = "E:/phone2region.txt";
     final String errorPath = "E:/phone2region.error.txt";
     final int phone = 1875471;

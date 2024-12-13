@@ -63,24 +63,6 @@ public class Phone2Region {
     }
 
     /**
-     * 通过文件初始化实例
-     *
-     * @param path 文件路径
-     */
-    public static void initByFile(String path) {
-        if (!isInit) {
-            try {
-                log.info("手机号码转区域初始化：文件路径LOCAL_PATH {}", path);
-                init(Files.newInputStream(Paths.get(path)));
-            } catch (Exception e) {
-                throw new Phone2RegionException("初始化文件异常！", e);
-            }
-        } else {
-            log.warn("已经初始化过了，不可重复初始化！");
-        }
-    }
-
-    /**
      * 通过URL初始化实例<br>
      * 例如：<code>https://www.404z.cn/files/phone2region/v2.0.0/data/phone2region.zdb</code>
      *
@@ -88,11 +70,29 @@ public class Phone2Region {
      */
     public static void initByUrl(String url) {
         if (!isInit) {
-            try {
-                log.info("手机号码转区域初始化：URL路径URL_PATH {}", url);
-                init(new URI(url).toURL().openConnection().getInputStream());
+            log.info("手机号码转区域初始化：URL路径URL_PATH {}", url);
+            try (InputStream inputStream = new URI(url).toURL().openConnection().getInputStream()) {
+                init(inputStream);
             } catch (Exception e) {
                 throw new Phone2RegionException("初始化URL异常！", e);
+            }
+        } else {
+            log.warn("已经初始化过了，不可重复初始化！");
+        }
+    }
+
+    /**
+     * 通过文件初始化实例
+     *
+     * @param path 文件路径
+     */
+    public static void initByFile(String path) {
+        if (!isInit) {
+            log.info("手机号码转区域初始化：文件路径LOCAL_PATH {}", path);
+            try (InputStream inputStream = Files.newInputStream(Paths.get(path))) {
+                init(inputStream);
+            } catch (Exception e) {
+                throw new Phone2RegionException("初始化文件异常！", e);
             }
         } else {
             log.warn("已经初始化过了，不可重复初始化！");
@@ -136,12 +136,6 @@ public class Phone2Region {
                         isInit = true;
                     } catch (Exception e) {
                         throw new Phone2RegionException("初始化异常！", e);
-                    } finally {
-                        try {
-                            inputStream.close();
-                        } catch (Exception e) {
-                            log.error("InputStream关闭异常！", e);
-                        }
                     }
                 } else {
                     log.warn("已经初始化过了，不可重复初始化！");
