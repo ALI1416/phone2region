@@ -27,11 +27,11 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 class DataGenerationTest {
 
-    final String datPath = "E:/phone.dat";
-    final String dat2Path = "E:/phone2region.dat";
-    final String txtPath = "E:/phone2region.txt";
-    final String dbPath = "E:/phone2region.db";
-    final String zdbPath = "E:/phone2region.zdb";
+    final String datPath = "D:/phone.dat";
+    final String dat2Path = "D:/phone2region.dat";
+    final String txtPath = "D:/phone2region.txt";
+    final String dbPath = "D:/phone2region.db";
+    final String zdbPath = "D:/phone2region.zdb";
     final int version = 20230225;
     final String version2 = "2302";
 
@@ -449,6 +449,12 @@ class DataGenerationTest {
         public Record() {
         }
 
+        /**
+         * 构造记录
+         *
+         * @param prt   指针
+         * @param bytes 记录值
+         */
         public Record(int prt, byte[] bytes) {
             this.prt = prt;
             this.bytes = bytes;
