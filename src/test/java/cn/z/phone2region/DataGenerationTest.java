@@ -1,6 +1,7 @@
 package cn.z.phone2region;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -32,8 +33,8 @@ class DataGenerationTest {
     final String txtPath = "D:/phone2region.txt";
     final String dbPath = "D:/phone2region.db";
     final String zdbPath = "D:/phone2region.zdb";
-    final int version = 20230225;
-    final String version2 = "2302";
+    final int version = 20240501;
+    final String version2 = "2405";
 
     /**
      * 数据文件生成

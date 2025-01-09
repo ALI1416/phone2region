@@ -2,6 +2,27 @@
 
 ## 文件列表
 
+### 版本：`v20240501`
+
+- 文件名：`phone2region.zdb`
+  - 版本号：`20240501`
+  - 校验码：`C8AEEA0A`
+  - 点击下载：[![phone2region.zdb](https://img.shields.io/github/size/ALI1416/phone2region/data/phone2region.zdb?label=phone2region.zdb&color=success&branch=v20240501)](https://www.404z.cn/files/phone2region/v20240501/data/phone2region.zdb)
+  - 链接地址：`https://www.404z.cn/files/phone2region/v20240501/data/phone2region.zdb`
+  - 原始地址：`https://github.com/ALI1416/phone2region/blob/v20240501/data/phone2region.zdb`
+- 文件名：`phone2region.txt`
+  - 点击下载：[![phone2region.txt](https://img.shields.io/github/size/ALI1416/phone2region/data/phone2region.txt?label=phone2region.txt&color=success&branch=v20240501)](https://www.404z.cn/files/phone2region/v20240501/data/phone2region.txt)
+  - 链接地址：`https://www.404z.cn/files/phone2region/v20240501/data/phone2region.txt`
+  - 原始地址：`https://github.com/ALI1416/phone2region/blob/v20240501/data/phone2region.txt`
+- 文件名：`phone.dat`(源文件有错误，错误记录`内蒙古|锡林郭勒|152500|00479`已更改为`内蒙古|锡林郭勒|26000|0479`)
+  - 点击下载：[![phone.dat](https://img.shields.io/github/size/ALI1416/phone2region/data/phone.dat?label=phone.dat&color=success&branch=v20240501)](https://www.404z.cn/files/phone2region/v20240501/data/phone.dat)
+  - 链接地址：`https://www.404z.cn/files/phone2region/v20240501/data/phone.dat`
+  - 原始地址：`https://github.com/ALI1416/phone2region/blob/v20240501/data/phone.dat`
+- 文件名：`phone.old.dat`(向原作者索要的最新版文件，更新时间2024年5月)
+  - 点击下载：[![phone.dat](https://img.shields.io/github/size/ALI1416/phone2region/data/phone.old.dat?label=phone.old.dat&color=success&branch=v20240501)](https://www.404z.cn/files/phone2region/v20240501/data/phone.old.dat)
+  - 链接地址：`https://www.404z.cn/files/phone2region/v20240501/data/phone.old.dat`
+  - 原始地址：`https://github.com/ALI1416/phone2region/blob/v20240501/data/phone.old.dat`
+
 ### 版本：`v2.0.0`
 
 - 文件名：`phone2region.zdb`
