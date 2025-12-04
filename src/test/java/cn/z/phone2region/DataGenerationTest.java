@@ -33,8 +33,8 @@ class DataGenerationTest {
     final String txtPath = "D:/phone2region.txt";
     final String dbPath = "D:/phone2region.db";
     final String zdbPath = "D:/phone2region.zdb";
-    final int version = 20240501;
-    final String version2 = "2405";
+    final int version = 20250201;
+    final String version2 = "2502";
 
     /**
      * 数据文件生成

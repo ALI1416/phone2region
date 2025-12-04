@@ -31,12 +31,12 @@
 <dependency>
   <groupId>cn.404z</groupId>
   <artifactId>phone2region</artifactId>
-  <version>2.3.1</version>
+  <version>2.4.0</version>
 </dependency>
 <dependency>
   <groupId>ch.qos.logback</groupId>
   <artifactId>logback-classic</artifactId>
-  <version>1.5.12</version>
+  <version>1.5.21</version>
 </dependency>
 ```
 
