@@ -71,7 +71,7 @@ class Phone2RegionTest {
     /**
      * 初始化多次
      */
-    // @Test
+    @Test
     void test03InitMore() {
         Phone2Region.initByFile(zdbPath);
         Phone2Region.initByFile(zdbPath);
@@ -85,7 +85,7 @@ class Phone2RegionTest {
     /**
      * 初始化异常
      */
-    // @Test
+    @Test
     void test04InitException() {
         try {
             Phone2Region.initByFile("A:/1.txt");
