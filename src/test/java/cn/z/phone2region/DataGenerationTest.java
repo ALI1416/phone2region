@@ -1,7 +1,6 @@
 package cn.z.phone2region;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -28,13 +27,15 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 class DataGenerationTest {
 
-    final String datPath = "D:/phone.dat";
-    final String dat2Path = "D:/phone2region.dat";
-    final String txtPath = "D:/phone2region.txt";
-    final String dbPath = "D:/phone2region.db";
-    final String zdbPath = "D:/phone2region.zdb";
+    final String datPath = "E:/phone.dat";
+    final String dat2Path = "E:/phone2region.dat";
+    final String txtPath = "E:/phone2region.txt";
+    final String dbPath = "E:/phone2region.db";
+    final String zdbPath = "E:/phone2region.zdb";
     final int version = 20250201;
     final String version2 = "2502";
+    final int phone = 1875471;
+    final String errorPath = "E:/phone2region.error.txt";
 
     /**
      * 数据文件生成
@@ -186,12 +187,12 @@ class DataGenerationTest {
         while (line != null && !line.isEmpty()) {
             // 手机号码前7位|省份|城市|邮编|区号|ISP
             String[] s = line.split("\\|");
-            String record = s[1] + "|" // 省份
+            String recordValue = s[1] + "|" // 省份
                     + s[2] + "|" // 城市
                     + s[3] + "|" // 邮编
                     + s[4]; // 区号
-            recordSet.add(record);
-            vectorList.add(new String[]{s[0], record, s[5]});
+            recordSet.add(recordValue);
+            vectorList.add(new String[]{s[0], recordValue, s[5]});
             line = bufferedReader.readLine();
         }
         bufferedReader.close();
@@ -202,12 +203,16 @@ class DataGenerationTest {
         // 版本号4字节，索引偏移量4字节
         int size = 8;
         // 记录区
-        for (String s : recordSet) {
+        for (String recordValue : recordSet) {
             // java的String为UTF16LE是变长4字节，而UTF8是变长3字节
-            byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-            recordMap.put(s.hashCode(), new Record(size, bytes));
+            byte[] bytes = recordValue.getBytes(StandardCharsets.UTF_8);
+            recordMap.put(recordValue.hashCode(), new Record(size, bytes));
             // 每条记录以0x00结尾
             size += (bytes.length + 1);
+        }
+        log.info("记录区核对数据 {} 条", recordMap.size());
+        if (recordSet.size() != recordMap.size()) {
+            throw new Exception("记录区数据hash冲突！请修改hash算法");
         }
         // 记录获取索引偏移量
         int indicesOffset = size;
@@ -228,13 +233,13 @@ class DataGenerationTest {
             buffer.put(BYTE0);
         }
         // 索引区
-        for (String[] s : vectorList) {
+        for (String[] vector : vectorList) {
             // 手机号码前7位
-            buffer.putInt(Integer.parseInt(s[0]));
+            buffer.putInt(Integer.parseInt(vector[0]));
             // 偏移量
-            buffer.putInt(recordMap.get(s[1].hashCode()).getPrt());
+            buffer.putInt(recordMap.get(vector[1].hashCode()).getPrt());
             // ISP
-            buffer.put(getIsp(s[2]));
+            buffer.put(getIsp(vector[2]));
         }
 
         /* 导出文件 */
@@ -314,13 +319,13 @@ class DataGenerationTest {
         while (line != null && !line.isEmpty()) {
             // 手机号码前7位|省份|城市|邮编|区号|ISP
             String[] s = line.split("\\|");
-            String record = s[1] + "|" // 省份
+            String recordValue = s[1] + "|" // 省份
                     + s[2] + "|" // 城市
                     + s[3] + "|" // 邮编
                     + s[4] + "|" // 区号
                     + s[5]; // ISP
-            recordSet.add(record);
-            vectorList.add(new Vector(s[0], record.hashCode()));
+            recordSet.add(recordValue);
+            vectorList.add(new Vector(s[0], recordValue.hashCode()));
             line = bufferedReader.readLine();
         }
         bufferedReader.close();
@@ -331,15 +336,19 @@ class DataGenerationTest {
         // 头部区
         int size = headerRecordAreaPtrValue;
         // 记录区
-        for (String record : recordSet) {
+        for (String recordValue : recordSet) {
             // java的String为UTF16LE是变长4字节，而UTF8是变长3字节
-            byte[] bytes = record.getBytes(StandardCharsets.UTF_8);
+            byte[] bytes = recordValue.getBytes(StandardCharsets.UTF_8);
             int length = bytes.length;
             if (length > 256) {
-                throw new Exception("记录值`" + record + "`为" + length + "字节，超出最大限制255字节！");
+                throw new Exception("记录值`" + recordValue + "`为" + length + "字节，超出最大限制255字节！");
             }
-            recordMap.put(record.hashCode(), new Record(size, bytes));
+            recordMap.put(recordValue.hashCode(), new Record(size, bytes));
             size += (length + 1);
+        }
+        log.info("记录区核对数据 {} 条", recordMap.size());
+        if (recordSet.size() != recordMap.size()) {
+            throw new Exception("记录区数据hash冲突！请修改hash算法");
         }
         // 头部区 二级索引区指针 值
         headerVector2AreaPtrValue = size;
@@ -551,6 +560,72 @@ class DataGenerationTest {
                     '}';
         }
 
+    }
+
+    /**
+     * 完整性测试
+     */
+    // @Test
+    void test05IntegrityTest() throws Exception {
+        Phone2Region.initByFile(zdbPath);
+        log.info(String.valueOf(Phone2Region.parse(phone)));
+        long startTime = System.currentTimeMillis();
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(errorPath));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(txtPath));
+        String line = bufferedReader.readLine();
+        int successCount = 0;
+        int errorCount = 0;
+        int nextPhone = 1300000;
+        int nullCount = 0;
+        while (line != null && !line.isEmpty()) {
+            // 手机号码前7位|省份|城市|邮编|区号|ISP
+            String[] s = line.split("\\|");
+            String recordValue = s[1] + "|" // 省份
+                    + s[2] + "|" // 城市
+                    + s[3] + "|" // 邮编
+                    + s[4] + "|" // 区号
+                    + s[5]; // ISP
+            int phone = Integer.parseInt(s[0]);
+            if (phone != nextPhone) {
+                int count = phone - nextPhone;
+                for (int i = 0; i < count; i++) {
+                    if (Phone2Region.parse(nextPhone + i) != null) {
+                        String error = "手机号码`" + (nextPhone + i) + "`解析错误，实际为`null`";
+                        errorCount++;
+                        log.error(error);
+                        bufferedWriter.write(error + "\n");
+                    }
+                }
+                nullCount += count;
+                nextPhone += count;
+            }
+            int hash = (new Region(recordValue)).toString().hashCode();
+            if (hash != Phone2Region.parse(phone).toString().hashCode()) {
+                String error = "解析记录`" + line + "`时发现手机号码`" + phone //
+                        + "`解析错误，实际为`" + Phone2Region.parse(phone) + "`";
+                errorCount++;
+                log.error(error);
+                bufferedWriter.write(error + "\n");
+            }
+            successCount++;
+            nextPhone++;
+            line = bufferedReader.readLine();
+        }
+        for (int i = nextPhone; i < 2000000; i++) {
+            if (Phone2Region.parse(i) != null) {
+                String error = "手机号码`" + (i) + "`解析错误，实际为`null`";
+                errorCount++;
+                log.error(error);
+                bufferedWriter.write(error + "\n");
+            }
+        }
+        nullCount += (2000000 - nextPhone);
+        bufferedReader.close();
+        bufferedWriter.flush();
+        bufferedWriter.close();
+        long endTime = System.currentTimeMillis();
+        log.info("解析 {} 条数据，有值 {} 条，空值 {} 条，错误 {} 条，用时 {} 毫秒", 700000, successCount, nullCount, errorCount,
+                endTime - startTime);
     }
 
 }
