@@ -19,6 +19,8 @@
 ## 数据文件
 
 - 数据文件目录：[点击查看](./data)
+- 最新版本：`v2.4.0`
+- 点击下载：[![phone2region.zdb](https://img.shields.io/github/size/ALI1416/phone2region/data/phone2region.zdb?label=phone2region.zdb&color=success&branch=v2.4.0)](https://www.404z.cn/files/phone2region/v2.4.0/data/phone2region.zdb)
 
 ### 其他语言项目
 
